@@ -53,7 +53,13 @@ entre deux participants. Sur téléphone, vide les données du site ou ouvre une
 
 ## Ce qui est simulé
 
-- La caméra : le bouton de prise de photo affiche une courte analyse puis passe à l’écran suivant.
+- La caméra est réelle : les écrans « Pose ton vêtement à plat », « Vise l’étiquette » et « Comparer »
+  ouvrent la caméra arrière du téléphone (ou la webcam sur ordinateur). Le bouton rond prend la photo,
+  qui s’affiche ensuite dans « Vérifie tes mesures », « Étiquette lue » et l’écran Résultat.
+  L’analyse, elle, est simulée : les mesures et le verdict restent des valeurs fictives.
+  Les photos restent dans le navigateur et ne sont envoyées nulle part ; elles disparaissent quand on ferme la page.
+- Si la caméra est refusée ou indisponible, le prototype continue avec des photos d’exemple.
+  Pour la réactiver : réglages du navigateur › autorisations du site › Caméra.
 - Les mesures, les verdicts et les écarts zone par zone sont des valeurs fictives.
 - Sur l’écran Résultat, toucher un autre pantalon de la garde-robe change le tracé, le verdict
   (bleu = Prends-le, jaune = Essaie-le, rouge = Passe) et le tableau des écarts.

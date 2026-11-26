@@ -215,7 +215,7 @@
     <h1 class="title-l" style="margin-bottom:16px">Trace a besoin de la caméra</h1>
     <p class="body">Pour photographier tes vêtements et les pièces en magasin. La caméra ne sert qu’au moment où tu l’ouvres.</p>
     <div class="spacer"></div>
-    <div class="actions"><a class="btn" href="#/o4">Autoriser la caméra</a><a class="link" href="#/o4">Plus tard</a></div>`);
+    <div class="actions"><button class="btn" data-action="askcam">Autoriser la caméra</button><a class="link" href="#/o4">Plus tard</a></div>`);
 
   SCREENS.o4 = () => screen('', `
     <h1 class="title-xl" style="margin:20px 0 12px">Tes données, ton choix</h1>
@@ -323,28 +323,38 @@
     <div class="actions"><a class="btn" href="#/photo">Continuer</a></div>`);
 
   function guideShape(catId, w = 200, h = 210) {
-    if (catId === 'pantalon') {
-      return `<svg width="${w}" height="${h}" viewBox="-20 -10 200 207" aria-hidden="true"><path d="${PATH.guide}" fill="none" stroke="#2A4DA0" stroke-width="3" stroke-dasharray="10 7" stroke-linejoin="round"/></svg>`;
-    }
-    return `<svg width="${w}" height="${h}" viewBox="4 2 56 60" aria-hidden="true"><path d="${SHAPE[catId]}" fill="none" stroke="#2A4DA0" stroke-width=".9" stroke-dasharray="3 2.2" stroke-linejoin="round"/></svg>`;
+    const pants = catId === 'pantalon';
+    const d = pants ? PATH.guide : SHAPE[catId];
+    const vb = pants ? '-20 -10 200 207' : '4 2 56 60';
+    const k = pants ? 1 : 0.3; // épaisseur relative au viewBox
+    return `<svg width="${w}" height="${h}" viewBox="${vb}" aria-hidden="true">
+      <path d="${d}" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="${6 * k}" stroke-linejoin="round"/>
+      <path d="${d}" fill="none" stroke="#265CF2" stroke-width="${3 * k}" stroke-dasharray="${10 * k} ${7 * k}" stroke-linejoin="round"/></svg>`;
+  }
+  // Viseur caméra : vidéo en direct + repère par-dessus
+  function camView(overlay, h) {
+    return `<div class="cam" style="height:${h}px">
+      <video data-cam playsinline muted autoplay></video>
+      <div class="cam-overlay">${overlay}</div>
+      <p class="cam-status" role="status">Activation de la caméra…</p></div>`;
   }
   SCREENS.photo = () => {
     const c = CATS.find(x => x.id === state.cat) || CATS[2];
     return screen('white', `
       ${stepbar('cat', 2)}
       <h1 class="title-m">Pose ${c.noun} à plat · 0 / 6 points</h1>
-      <div class="guide" style="margin:18px 0 26px">${guideShape(c.id)}</div>
+      ${camView(guideShape(c.id, 190, 200), 330)}
       <div class="spacer"></div>
       <ul class="checks" style="padding:0;margin:0 0 14px"><li>○ &nbsp;Bon éclairage</li><li>○ &nbsp;Fond contrasté (plancher, drap)</li><li>○ &nbsp;Le vêtement en entier dans le cadre</li></ul>
       <div class="seg"><a aria-current="true" href="#/photo">Vêtement</a><a href="#/ad1">Étiquette</a></div>
-      <button class="shutter" aria-label="Prendre la photo" data-action="shoot" data-to="verif" data-msg="Mesure en cours…"></button>`);
+      <button class="shutter" aria-label="Prendre la photo" data-action="shoot" data-shot="add" data-to="verif" data-msg="Mesure en cours…"></button>`);
   };
 
   SCREENS.verif = () => screen('', `
     ${stepbar('photo', 3)}
     <h1 class="title-l" style="margin-bottom:18px">Vérifie tes mesures</h1>
     <div class="row gap-16" style="align-items:flex-start;margin-bottom:24px">
-      <div class="card" style="width:104px;height:120px;padding:6px;flex-shrink:0;display:flex;justify-content:center">${photo(IMG.jean, { alt: 'Ton vêtement' })}</div>
+      <div class="card" style="width:104px;height:120px;padding:6px;flex-shrink:0;display:flex;justify-content:center;overflow:hidden">${photo(SHOTS.add || IMG.jean, { alt: 'Ton vêtement' })}</div>
       <div class="stack gap-10"><span class="chip sm" style="align-self:flex-start;font-weight:600">Confiance : bonne</span>
         <p class="small">Mesures calculées par ton téléphone, sans objet de référence. Corrige si besoin.</p></div>
     </div>
@@ -363,16 +373,16 @@
   SCREENS.ad1 = () => screen('white', `
     <header class="topbar">${back('photo')}</header>
     <h1 class="title-m">Vise l’étiquette</h1>
-    <div class="frame-dashed" style="width:220px;height:220px;margin:60px auto 16px;border-radius:30px"></div>
-    <p class="small" style="padding:0 36px">Étiquette du fabricant : composition et taille</p>
+    ${camView('<div style="width:200px;height:200px;border-radius:28px;border:3px dashed #fff;box-shadow:0 0 0 2px rgba(38,92,242,.9), inset 0 0 0 2px rgba(38,92,242,.9)"></div>', 330)}
+    <p class="small" style="padding:0 12px">Étiquette du fabricant : composition et taille</p>
     <div class="spacer"></div>
     <div class="seg" style="margin-top:20px"><a href="#/photo">Vêtement</a><a aria-current="true" href="#/ad1">Étiquette</a></div>
-    <button class="shutter" aria-label="Lire l’étiquette" data-action="shoot" data-to="ad2" data-msg="Lecture de l’étiquette…"></button>`);
+    <button class="shutter" aria-label="Lire l’étiquette" data-action="shoot" data-shot="tag" data-to="ad2" data-msg="Lecture de l’étiquette…"></button>`);
 
   SCREENS.ad2 = () => screen('', `
     ${topbar('ad1', 'Étiquette lue')}
     <div class="card row gap-16" style="padding:16px">
-      <span class="tint" style="width:96px;height:96px;flex-shrink:0"></span>
+      ${SHOTS.tag ? `<img src="${SHOTS.tag}" alt="Étiquette photographiée" style="width:96px;height:96px;object-fit:cover;border-radius:14px;flex-shrink:0">` : '<span class="tint" style="width:96px;height:96px;flex-shrink:0"></span>'}
       <div class="stack gap-4"><b style="font-size:15px">Pantalon · Taille 32/32</b><span class="small">Coton 98 %, élasthanne 2 %</span><span class="small">Lavage 30 °C</span></div>
     </div>
     <p class="small" style="margin-top:16px;padding:16px;border:1.5px dashed #2A4DA0;border-radius:16px">Les tailles d’étiquette varient selon les marques. Pour un guide fiable, ajoute aussi une photo à plat.</p>
@@ -397,11 +407,11 @@
   /* --- Comparer en magasin --- */
   SCREENS.scan = () => screen('white', `
     <header class="topbar">${back(state.hasWardrobe ? 'accueil' : 'vide', 'close')}</header>
-    <div class="guide" style="margin-top:20px">${guideShape('pantalon', 220, 230)}</div>
+    ${camView(guideShape('pantalon', 210, 220), 400)}
     <div class="spacer"></div>
-    <p style="font-size:14px;font-weight:500;line-height:1.45;margin:24px 0 20px">Prends la pièce en photo, tenue devant toi, ou scanne son code produit. Trace la compare à tous tes vêtements du même type.</p>
+    <p style="font-size:14px;font-weight:500;line-height:1.45;margin:0 0 16px">Prends la pièce en photo, tenue devant toi, ou scanne son code produit. Trace la compare à tous tes vêtements du même type.</p>
     <div class="seg"><a aria-current="true" href="#/scan">Vêtement</a><button data-action="shoot" data-to="resultat" data-msg="Recherche du produit…">Code produit</button></div>
-    <button class="shutter" aria-label="Comparer" data-action="shoot" data-to="resultat" data-msg="Comparaison avec tes pantalons…"></button>`);
+    <button class="shutter" aria-label="Comparer" data-action="shoot" data-shot="store" data-to="resultat" data-msg="Comparaison avec tes pantalons…"></button>`);
 
   function result(noMatch, params) {
     const i = Math.max(0, REFS.findIndex(r => r.id === params.get('ref')));
@@ -419,7 +429,7 @@
       <div class="card trace-card">
         <div class="legend" aria-hidden="true"><span><i class="photo"></i>Pièce en magasin (photo)</span><span><i class="trace"></i>Ton ${ref.name.toLowerCase()} (tracé)</span></div>
         <div class="trace-stage">
-          <img src="${IMG.piece}" alt="Pantalon photographié en magasin" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;object-fit:fill">
+          <img src="${SHOTS.store || IMG.piece}" alt="Pièce photographiée en magasin" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;object-fit:${SHOTS.store ? 'cover' : 'fill'};border-radius:${SHOTS.store ? '8px' : '0'}">
           ${traceSvg(ref, ref.x, ref.y || 15)}
         </div>
       </div>
@@ -506,6 +516,44 @@
     <p class="small" style="font-size:12px;margin-top:20px">Accessibilité : taille du texte et contraste élevé.</p>`);
 
   /* ------------------------------------------------------------------ */
+  /* Caméra (vraie caméra du téléphone ou de l’ordinateur)              */
+  /* ------------------------------------------------------------------ */
+  const SHOTS = {}; // photos prises pendant la séance (gardées en mémoire seulement)
+  let stream = null;
+  const camOK = () => !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) && window.isSecureContext;
+  async function openStream() {
+    if (stream && stream.getVideoTracks().some(t => t.readyState === 'live')) return stream;
+    stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } } });
+    return stream;
+  }
+  function stopCamera() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
+  async function startCamera(video) {
+    const box = video.closest('.cam'), status = box.querySelector('.cam-status');
+    if (!camOK()) { box.classList.add('off'); status.textContent = 'Caméra indisponible ici : la photo est simulée.'; return; }
+    try {
+      const s = await openStream();
+      if (!document.body.contains(video)) return;
+      video.srcObject = s; await video.play();
+      box.classList.add('live'); status.hidden = true;
+    } catch (e) {
+      box.classList.add('off');
+      status.textContent = e && e.name === 'NotAllowedError'
+        ? 'Caméra refusée : autorise-la dans les réglages du navigateur. En attendant, la photo est simulée.'
+        : 'Caméra indisponible : la photo est simulée.';
+    }
+  }
+  function capture() {
+    const v = app.querySelector('video[data-cam]');
+    if (!v || !v.videoWidth) return null;
+    const max = 1000, r = Math.min(1, max / Math.max(v.videoWidth, v.videoHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(v.videoWidth * r); c.height = Math.round(v.videoHeight * r);
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    const box = v.closest('.cam'); box.classList.add('flash'); setTimeout(() => box.classList.remove('flash'), 250);
+    return c.toDataURL('image/jpeg', 0.85);
+  }
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stopCamera(); else { const v = app.querySelector('video[data-cam]'); if (v) startCamera(v); } });
+
+  /* ------------------------------------------------------------------ */
   /* Routeur et interactions                                            */
   /* ------------------------------------------------------------------ */
   const app = document.getElementById('app');
@@ -525,6 +573,8 @@
     lastRoute = raw;
     document.title = 'Trace · ' + (scr.querySelector('h1') ? scr.querySelector('h1').textContent : 'Prototype');
     markScenario(key);
+    const v = app.querySelector('video[data-cam]');
+    if (v) startCamera(v); else stopCamera();
   }
 
   function go(route) { location.hash = '#/' + route; }
@@ -554,14 +604,22 @@
     if (a === 'like') { const k = el.dataset.k; state.likes[k] = !state.likes[k]; save(); render(); }
     if (a === 'cat') { state.cat = el.dataset.c; save(); render(); }
     if (a === 'toast') { toast(el.dataset.msg); }
-    if (a === 'shoot') { analyse(el.dataset.msg, el.dataset.to); }
+    if (a === 'shoot') {
+      if (el.dataset.shot) { const img = capture(); if (img) SHOTS[el.dataset.shot] = img; }
+      analyse(el.dataset.msg, el.dataset.to);
+    }
+    if (a === 'askcam') {
+      if (!camOK()) { toast('Caméra indisponible sur ce navigateur : les photos seront simulées.'); go('o4'); return; }
+      openStream().then(() => { stopCamera(); go('o4'); })
+        .catch(() => { toast('Caméra refusée : tu pourras l’autoriser plus tard.'); setTimeout(() => go('o4'), 1200); });
+    }
     if (a === 'decide') {
       state.compares += 1;
       if (el.dataset.d === 'pass') { state.laisses += 1; save(); go('cp5'); } else { state.gardes += 1; save(); go('cp4'); }
     }
     if (a === 'cabine') {
       const ref = REFS.find(r => r.id === el.dataset.ref);
-      state.cabine.unshift({ name: 'Pantalon kaki à pinces', img: IMG.piece, verdict: `${VERDICT[el.dataset.v]} · vs ton ${ref.name.toLowerCase()}`, when: 'À l’instant', ref: ref.id });
+      state.cabine.unshift({ name: SHOTS.store ? 'Pièce photographiée' : 'Pantalon kaki à pinces', img: SHOTS.store || IMG.piece, verdict: `${VERDICT[el.dataset.v]} · vs ton ${ref.name.toLowerCase()}`, when: 'À l’instant', ref: ref.id });
       save(); go('cabine');
     }
   });
