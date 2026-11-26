@@ -306,9 +306,8 @@
   SCREENS.o1 = () => screen('', `
     <div class="spacer"></div>
     <div class="stack gap-24" style="align-items:center">
-      <div style="width:184px;height:184px;border-radius:44px;background:linear-gradient(135deg,#14336B,#5C82C4);box-shadow:0 24px 50px rgba(20,51,107,.3);display:flex;align-items:center;justify-content:center">
-        <img src="img/logo-trace.svg" alt="Trace" width="136" height="48">
-      </div>
+      <div class="app-icon"><img src="img/favicon.svg" alt="" width="140" height="140"></div>
+      <img src="img/logo-trace-bleu.svg" alt="Trace" width="150" height="53" style="margin-top:6px">
       <p class="body" style="font-size:16px">Porte ce que tu aimes déjà.</p>
     </div>
     <div class="spacer"></div>
