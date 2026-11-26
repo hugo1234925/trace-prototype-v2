@@ -15,6 +15,11 @@
     demizip: 'img/demi-zip-creme.jpg',
     tshirt: 'img/tshirt-creme.jpg',
     piece: 'img/piece-magasin.jpg',
+    jeanNoir: 'img/jean-noir.jpg',
+    cargo: 'img/cargo.jpg',
+    jogging: 'img/jogging.jpg',
+    bomber: 'img/bomber.jpg',
+    coupeVent: 'img/coupe-vent.jpg',
   };
 
   // Tracés exportés de Figma (coordonnées en px de la carte « tracé superposé »)
@@ -52,11 +57,11 @@
       zones: [['Taille', 'ok', '= 0 cm'], ['Hanches', 'ok', '+1 cm · dans ta marge'], ['Entrejambe', 'ok', '= 0 cm'], ['Jambe', 'minor', '+2 cm · c’est la coupe'], ['Longueur', 'minor', '+2 cm · ourlet possible']] },
     { id: 'chino', name: 'Chino beige', img: IMG.chino, path: PATH.chino, x: 25, y: 15, w: 106.26, h: 212.37, verdict: 'try',
       zones: [['Taille', 'ok', '= 0 cm'], ['Hanches', 'warn', '−2 cm · plus serré'], ['Entrejambe', 'ok', '= 0 cm'], ['Jambe', 'ok', '= 0 cm'], ['Longueur', 'warn', '−4 cm · plus court']] },
-    { id: 'noir', name: 'Jean noir', img: IMG.jean, dark: true, path: PATH.noir, w: 69.94 * K, h: 133.04 * K, verdict: 'pass',
+    { id: 'noir', name: 'Jean noir', img: IMG.jeanNoir, path: PATH.noir, w: 69.94 * K, h: 133.04 * K, verdict: 'pass',
       zones: [['Taille', 'bad', '−3 cm · trop serré'], ['Hanches', 'warn', '−2 cm · plus serré'], ['Entrejambe', 'ok', '= 0 cm'], ['Jambe', 'warn', '−3 cm · plus étroit'], ['Longueur', 'minor', '−2 cm']] },
-    { id: 'cargo', name: 'Cargo', img: IMG.chino, dark: true, path: PATH.cargo, w: 91.64 * K, h: 133.04 * K, verdict: 'pass',
+    { id: 'cargo', name: 'Cargo', img: IMG.cargo, path: PATH.cargo, w: 91.64 * K, h: 133.04 * K, verdict: 'pass',
       zones: [['Taille', 'bad', '+4 cm · trop large'], ['Hanches', 'bad', '+6 cm · trop ample'], ['Entrejambe', 'ok', '= 0 cm'], ['Jambe', 'bad', '+8 cm · bien plus large'], ['Longueur', 'ok', '= 0 cm']] },
-    { id: 'jogging', name: 'Jogging', img: IMG.jean, light: true, path: PATH.jogging, w: 72.35 * K, h: 133.04 * K, verdict: 'pass',
+    { id: 'jogging', name: 'Jogging', img: IMG.jogging, path: PATH.jogging, w: 72.35 * K, h: 133.04 * K, verdict: 'pass',
       zones: [['Taille', 'warn', 'élastique · difficile à comparer'], ['Hanches', 'warn', '+3 cm'], ['Entrejambe', 'bad', '−4 cm · plus court'], ['Jambe', 'bad', 'resserré au bas'], ['Longueur', 'bad', '−6 cm · trop court']] },
   ];
   // Scénario 09b : aucune correspondance
@@ -375,9 +380,9 @@
     <div class="section-head"><h2 class="h-section">Hauts</h2><span class="small">3 traces</span><a class="chip" href="#/garderobe" data-filter="Hauts">Voir tout</a></div>
     <div class="hscroll">${[{ name: 'T-shirt blanc', img: IMG.tshirt }, { name: 'Chemise ciel', img: IMG.demizip }, { name: 'Chandail crème', img: IMG.marine }].map(itemCard).join('')}${addCard()}</div>
     <div class="section-head"><h2 class="h-section">Bas</h2><span class="small">3 traces</span><a class="chip" href="#/garderobe" data-filter="Bas">Voir tout</a></div>
-    <div class="hscroll">${[{ name: 'Jean droit', img: IMG.jean, link: 'fiche' }, { name: 'Chino beige', img: IMG.chino }, { name: 'Jean noir', img: IMG.jean, dark: true }].map(itemCard).join('')}${addCard()}</div>
+    <div class="hscroll">${[{ name: 'Jean droit', img: IMG.jean, link: 'fiche' }, { name: 'Chino beige', img: IMG.chino }, { name: 'Jean noir', img: IMG.jeanNoir }].map(itemCard).join('')}${addCard()}</div>
     <div class="section-head"><h2 class="h-section">Vestes</h2><span class="small">3 traces</span><a class="chip" href="#/garderobe" data-filter="Vestes">Voir tout</a></div>
-    <div class="hscroll">${[{ name: 'Veste en jean', img: IMG.surchemise }, { name: 'Bomber', img: IMG.surchemise, dark: true }, { name: 'Coupe-vent', img: IMG.surchemise, light: true }].map(itemCard).join('')}${addCard()}</div>`, 'home');
+    <div class="hscroll">${[{ name: 'Veste en jean', img: IMG.surchemise }, { name: 'Bomber', img: IMG.bomber }, { name: 'Coupe-vent', img: IMG.coupeVent }].map(itemCard).join('')}${addCard()}</div>`, 'home');
 
   /* --- Garde-robe & fiche --- */
   SCREENS.garderobe = () => {
