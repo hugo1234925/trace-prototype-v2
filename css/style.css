@@ -513,3 +513,8 @@ h1, h2, h3, p { margin: 0; }
 
 /* Cadre d'étiquette : même trait que le guide du vêtement */
 .tag-frame { width: 170px; height: 170px; border-radius: 26px; border: 3px dashed #265CF2; box-shadow: 0 0 0 2px rgba(255,255,255,.95), inset 0 0 0 2px rgba(255,255,255,.95); }
+
+/* Raccourcis de l'accueil : deux cartes de même taille */
+.shortcut { flex: 1 1 0; min-width: 0; height: 64px; gap: 8px; padding: 12px 10px 12px 12px; }
+.shortcut > span:last-child { min-width: 0; }
+.shortcut > span:last-child > span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
