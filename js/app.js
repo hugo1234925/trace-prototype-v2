@@ -92,6 +92,14 @@
     laisses: 4,
     cat: 'pantalon',
     filter: 'Tout',
+    wardrobe: WARDROBE,
+    grenier: [
+      { name: 'Jean noir', meta: 'Bas · denim · peu extensible', img: IMG.jeanNoir, cat: 'Bas', why: 'Ne me fait plus', kind: 'plus' },
+      { name: 'Chandail rayé', meta: 'Haut · coton · extensible', img: IMG.marine, cat: 'Hauts', why: 'Usé ou abîmé', kind: 'plus' },
+      { name: 'Pantalon cargo', meta: 'Bas · coton · solide', img: IMG.cargo, cat: 'Bas', why: 'Retour en ligne', kind: 'ligne' },
+      { name: 'Bomber', meta: 'Veste · nylon · solide', img: IMG.bomber, cat: 'Vestes', why: 'Ne me fait plus', kind: 'plus' },
+    ],
+    grFilter: 'Tout',
     toggles: [true, false, true],
     profile: { prenom: 'Alex', nom: 'Tremblay', user: 'alex.t', email: '', genre: 'Non binaire', coupe: 'Les deux', grandeur: '172', unit: 'cm', taille: 'M',
       styles: ['Minimaliste', 'Vintage'], budget: '50 à 100 $', freq: 'Quelques fois par an', why: ['Arrêter les retours de colis', 'Acheter moins, mais mieux'], other: '', cgu: false },
@@ -125,6 +133,9 @@
     check: '<path d="M5 12.5l4.5 4.5L19 7"/>',
     chev: '<path d="M9 5l7 7-7 7"/>',
     search: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+    trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+    restore: '<path d="M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/>',
+    box: '<path d="M3 7l9-4 9 4-9 4zM3 7v10l9 4 9-4V7M12 11v10"/>',
     camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
   };
   function icon(name, size = 22, color = 'currentColor', sw = 1.8) {
@@ -366,7 +377,7 @@
       <a class="round-btn" href="#/param" aria-label="Paramètres">${icon('menu', 20)}</a>
     </header>
     <section class="bilan" aria-label="Mon bilan">
-      <div class="head"><b>Mon bilan</b><a class="btn-glass" href="#/garderobe">Visualiser</a></div>
+      <div class="head"><b>Mon bilan</b><a class="btn-glass" href="#/bilan">Visualiser</a></div>
       <div class="row gap-8">
         <div class="glass"><strong>${state.traces}</strong><span>traces</span></div>
         <div class="glass"><strong>2</strong><span>retours évités</span></div>
@@ -374,7 +385,7 @@
       </div>
     </section>
     <div class="row gap-10" style="margin-top:14px">
-      <a class="card shortcut" href="#/bilan"><span class="dot"></span><span><b>Bilan détaillé</b><span>${state.laisses} laissés · ${state.gardes} gardés</span></span></a>
+      <a class="card shortcut" href="#/grenier"><span class="dot">${icon('box', 20, '#2A4DA0')}</span><span><b>Le grenier</b><span>${state.grenier.length} archivé${state.grenier.length > 1 ? 's' : ''}</span></span></a>
       <a class="card shortcut" href="#/cabine"><span class="dot"></span><span><b>Ma cabine</b><span>${state.cabine.length} pièces à essayer</span></span></a>
     </div>
     <div class="section-head"><h2 class="h-section">Hauts</h2><span class="small">3 traces</span><a class="chip" href="#/garderobe" data-filter="Hauts">Voir tout</a></div>
@@ -385,18 +396,50 @@
     <div class="hscroll">${[{ name: 'Veste en jean', img: IMG.surchemise }, { name: 'Bomber', img: IMG.bomber }, { name: 'Coupe-vent', img: IMG.coupeVent }].map(itemCard).join('')}${addCard()}</div>`, 'home');
 
   /* --- Garde-robe & fiche --- */
+  let sheet = null; // index du vêtement à mettre au grenier
+  let sheetWhy = 'Il ne me fait plus';
+  const WHY = ['Il ne me fait plus', 'Il est usé ou abîmé', 'Commandé en ligne : il ne fait pas', 'Autre raison'];
+  const WHY_TAG = { 'Il ne me fait plus': ['Ne me fait plus', 'plus'], 'Il est usé ou abîmé': ['Usé ou abîmé', 'plus'], 'Commandé en ligne : il ne fait pas': ['Retour en ligne', 'ligne'], 'Autre raison': ['Autre raison', 'plus'] };
   SCREENS.garderobe = () => {
-    const list = WARDROBE.filter(w => state.filter === 'Tout' || w.cat === state.filter);
+    const list = state.wardrobe.map((w, i) => [w, i]).filter(([w]) => state.filter === 'Tout' || w.cat === state.filter);
+    const n = state.wardrobe.length;
+    const w = sheet !== null ? state.wardrobe[sheet] : null;
     return screen('', `
-      <header class="topbar" style="align-items:flex-start">${back('accueil')}<div><h1 class="title-xl">Ma garde-robe</h1><p class="small">6 préférés</p></div></header>
+      <header class="topbar" style="align-items:flex-start">${back('accueil')}<div style="flex:1;min-width:0"><h1 class="title-xl" style="white-space:nowrap;font-size:24px">Ma garde-robe</h1><p class="small">${n} préféré${n > 1 ? 's' : ''}</p></div><a class="pill-glass" href="#/grenier">${icon('box', 16, '#2A4DA0')}Le grenier</a></header>
       <label class="search">${icon('search', 18, '#6B6F7A')}<input type="search" placeholder="Rechercher un vêtement" aria-label="Rechercher un vêtement"></label>
       <div class="seg lg-tabs" style="margin:16px 0" role="tablist" aria-label="Filtrer">
         ${['Tout', 'Hauts', 'Bas', 'Vestes'].map(f => `<button role="tab" aria-selected="${state.filter === f}" aria-current="${state.filter === f}" data-action="filter" data-f="${f}">${f}</button>`).join('')}
       </div>
-      <div class="grid-2">${list.map(w => {
+      ${list.length ? `<div class="grid-2">${list.map(([w, i]) => {
         const inner = `<div class="ph">${photo(w.img)}</div><b>${w.name}</b><span>${w.meta}</span>`;
-        return w.link ? `<a class="card wcard" href="#/${w.link}">${inner}</a>` : `<div class="card wcard">${inner}</div>`;
-      }).join('')}</div>`, 'home');
+        const card = w.link ? `<a class="card wcard" href="#/${w.link}">${inner}</a>` : `<div class="card wcard">${inner}</div>`;
+        return `<div class="wcard-wrap">${card}<button class="mini-glass" data-action="trash" data-i="${i}" aria-label="Mettre « ${esc(w.name)} » au grenier">${icon('trash', 16)}</button></div>`;
+      }).join('')}</div>` : '<p class="small center" style="margin-top:30px">Rien dans cette catégorie.</p>'}
+`, 'home') + (w ? `<div class="veil" data-action="closesheet"></div>
+      <div class="sheet" role="dialog" aria-modal="true" aria-label="Mettre au grenier">
+        <i class="grab"></i>
+        <h2>Mettre « ${esc(w.name)} » au grenier ?</h2>
+        <p class="small" style="font-size:14px;margin:6px 0 16px">Il ne servira plus de repère pour comparer. Tu pourras le remettre à tout moment.</p>
+        <b style="font-size:13px">Pourquoi ?</b>
+        <div class="stack gap-8" style="margin:10px 0 18px" role="radiogroup">${WHY.map(r => `<button class="radio-row" role="radio" aria-checked="${sheetWhy === r}" data-action="why" data-v="${esc(r)}"><i></i>${r}</button>`).join('')}</div>
+        <button class="btn" data-action="archive">Mettre au grenier</button>
+        <button class="link-btn" data-action="closesheet">Annuler</button>
+      </div>` : '');
+  };
+
+  SCREENS.grenier = () => {
+    const f = state.grFilter;
+    const list = state.grenier.map((g, i) => [g, i]).filter(([g]) => f === 'Tout' || (f === 'Ne me font plus' ? g.kind === 'plus' : g.kind === 'ligne'));
+    const n = state.grenier.length;
+    return screen('', `
+      <header class="topbar" style="align-items:flex-start">${back('accueil')}<div><h1 class="title-xl">Le grenier</h1><p class="small">${n} vêtement${n > 1 ? 's' : ''} archivé${n > 1 ? 's' : ''}</p></div></header>
+      <label class="search">${icon('search', 18, '#6B6F7A')}<input type="search" placeholder="Rechercher dans le grenier" aria-label="Rechercher dans le grenier"></label>
+      <div class="seg lg-tabs" style="margin:16px 0" role="tablist" aria-label="Filtrer">
+        ${['Tout', 'Ne me font plus', 'Retours en ligne'].map(x => `<button role="tab" aria-selected="${f === x}" aria-current="${f === x}" data-action="grfilter" data-f="${x}">${x}</button>`).join('')}
+      </div>
+      ${list.length ? `<div class="grid-2">${list.map(([g, i]) => `<div class="wcard-wrap"><div class="card wcard"><div class="ph">${photo(g.img)}</div><b>${g.name}</b><span class="tag">${g.why}</span></div><button class="mini-glass" data-action="restore" data-i="${i}" aria-label="Remettre « ${esc(g.name)} » dans ma garde-robe">${icon('restore', 16)}</button></div>`).join('')}</div>`
+        : '<p class="small center" style="margin-top:30px">Le grenier est vide ici.</p>'}
+      <p class="note-dash">Les vêtements du grenier ne servent plus de repère pour comparer.</p>`, 'home');
   };
 
   SCREENS.fiche = () => screen('', `
@@ -537,12 +580,12 @@
       ${topbar('scan', 'Résultat', '<span class="chip sm" style="font-weight:500">Confiance moyenne · ± 1 cm</span>')}
       <div class="bubble">${noMatch ? 'Aucun de tes 5 pantalons ne correspond' : 'Proche de 2 de tes 5 pantalons'}</div>
       <div class="card trace-card">
-        <div class="legend" aria-hidden="true"><span><i class="photo"></i>Pièce en magasin (photo)</span><span><i class="trace"></i>Ton ${ref.name.toLowerCase()} (tracé)</span></div>
         <div class="trace-stage">
           <img src="${SHOTS.store || IMG.piece}" alt="Pièce photographiée en magasin" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;object-fit:${SHOTS.store ? 'cover' : 'fill'};border-radius:${SHOTS.store ? '8px' : '0'}">
           ${traceSvg(ref, ref.x, ref.y || 15)}
         </div>
       </div>
+      <div class="legend" aria-hidden="true"><span><i class="photo"></i>Pièce en magasin (photo)</span><span><i class="trace"></i>Ton ${ref.name.toLowerCase()} (tracé)</span></div>
       <div class="verdict ${verdict}" role="status"><small>Notre avis, comparé à ton ${ref.name.toLowerCase()}</small><strong>${VERDICT[verdict]}</strong></div>
       <p style="font-size:13px;font-weight:600;margin:18px 0 10px">Comparé à tous tes pantalons · fais défiler</p>
       <div class="refs" role="group" aria-label="Choisir le pantalon de référence">
@@ -599,21 +642,42 @@
         ${icon('chev', 20)}</a>`).join('')}
     </div>`);
 
-  SCREENS.bilan = () => screen('', `
-    ${topbar('accueil', 'Bilan détaillé')}
-    <div class="card row gap-16" style="background:var(--ink);color:#fff;height:110px;padding:0 20px">
-      <strong style="font-size:56px;line-height:1">2</strong>
-      <span class="stack gap-4"><b style="font-size:17px">retours évités</b><span style="font-size:12px;color:#B9BCC4">2 colis en moins sur la route</span></span></div>
-    <div class="card" style="padding:16px;margin-top:16px">
-      <b style="font-size:14px">${state.compares} vêtements comparés avant de payer</b>
-      <div style="margin:14px 0;display:grid;gap:6px;grid-template-columns:repeat(${Math.min(state.compares, 8)},minmax(0,1fr))">${Array.from({ length: state.compares }, (_, k) => `<i style="height:46px;border-radius:10px;display:block;${k < state.gardes ? 'background:var(--ink)' : 'border:1px solid var(--line)'}"></i>`).join('')}</div>
-      <p class="small" style="font-size:12px">■ ${state.gardes} achetés, gardés &nbsp;&nbsp;&nbsp; □ ${state.laisses} laissés : pas ton fit</p>
-    </div>
-    <h2 style="font-size:16px;margin:22px 0 12px">Fil de vie</h2>
-    <div class="stack gap-10">
-      ${[[IMG.jean, 'Mon jean préféré', 'porté depuis 2023 · trace gardée'], [IMG.jean, 'Jean droit brut · 30', 'acheté en ligne · gardé, aucun retour'], [IMG.tshirt, 'T-shirt du dimanche', 'usé · remplacé à l’identique']].map(([img, t, d]) => `
-        <div class="card row gap-12" style="padding:8px 12px 8px 10px;height:68px"><span style="width:52px;height:52px;display:flex;justify-content:center">${photo(img)}</span><span class="stack gap-4"><b style="font-size:14px">${t}</b><span class="small" style="font-size:12px">${d}</span></span></div>`).join('')}
-    </div>`);
+  let period = 'Depuis le début';
+  SCREENS.bilan = () => {
+    const wait = state.cabine.length, total = state.gardes + state.laisses + wait;
+    const pct = v => (total ? v / total * 100 : 0).toFixed(1);
+    const cats = ['Hauts', 'Bas', 'Vestes'].map(c => [c, state.wardrobe.filter(w => w.cat === c).length]);
+    const why = [['Trop serré à la taille', 2], ['Trop court', 1], ['Coupe trop ample', 1]];
+    return screen('', `
+      ${topbar('accueil', 'Mon bilan')}
+      <p class="small" style="font-size:14px;margin:-4px 0 14px">Ce que tes traces et tes comparaisons t’ont évité.</p>
+      <div class="seg lg-tabs" style="margin-bottom:16px" role="tablist" aria-label="Période">
+        ${['Ce mois-ci', '3 mois', 'Depuis le début'].map(x => `<button role="tab" aria-selected="${period === x}" aria-current="${period === x}" data-action="period" data-f="${x}">${x}</button>`).join('')}
+      </div>
+      <section class="bilan"><div class="row gap-8">
+        <div class="glass"><strong>${state.wardrobe.length}</strong><span>traces actives</span></div>
+        <div class="glass"><strong>2</strong><span>retours évités</span></div>
+        <div class="glass"><strong>${state.compares}</strong><span>comparés</span></div>
+      </div></section>
+      <div class="card bcard">
+        <b>Tes comparaisons</b><span class="small">${total} pièces comparées en magasin</span>
+        <div class="stackbar" aria-hidden="true"><i class="c-g" style="width:${pct(state.gardes)}%"></i><i class="c-r" style="width:${pct(state.laisses)}%"></i><i class="c-y" style="width:${pct(wait)}%"></i></div>
+        <a class="brow" href="#/garderobe"><i class="c-g"></i>Achetés et gardés<b>${state.gardes}</b>${icon('chev', 18, '#6B6F7A')}</a>
+        <div class="brow"><i class="c-r"></i>Laissés : pas ton fit<b>${state.laisses}</b><span style="width:18px"></span></div>
+        <a class="brow" href="#/cabine"><i class="c-y"></i>En attente d’essayage<b>${wait}</b>${icon('chev', 18, '#6B6F7A')}</a>
+      </div>
+      <div class="card bcard">
+        <b>Pourquoi tu les as laissés</b>
+        ${why.map(([l, v]) => `<div class="hbar"><span>${l}</span><b>${v}</b><div><i style="width:${v / 4 * 100}%"></i></div></div>`).join('')}
+      </div>
+      <div class="card bcard">
+        <b>Ta garde-robe</b><span class="small">${state.wardrobe.length} traces servent de repère</span>
+        <div class="tiles">${cats.map(([c, v]) => `<div><strong>${v}</strong><span>${c}</span></div>`).join('')}</div>
+        <a class="brow" href="#/grenier">${icon('box', 18, '#2A4DA0')}Au grenier : ${state.grenier.length} vêtements archivés<b></b>${icon('chev', 18, '#6B6F7A')}</a>
+      </div>
+      <div class="card impact"><b>Ton impact</b><div class="row"><div><strong>2</strong><span>colis en moins sur la route</span></div><div><strong>${state.laisses}</strong><span>achats évités : pas ton fit</span></div></div></div>
+      <p class="tiny" style="margin:12px 0 20px">Valeurs fictives.</p>`);
+  };
 
   SCREENS.param = () => screen('', `
     ${topbar('accueil', 'Paramètres')}
@@ -677,6 +741,7 @@
     const prev = app.querySelector('.screen');
     const keep = lastRoute.split('?')[0] === key && prev ? prev.scrollTop : 0;
     const refsScroll = prev && prev.querySelector('.refs') ? prev.querySelector('.refs').scrollLeft : 0;
+    if (key !== 'garderobe') sheet = null;
     app.innerHTML = SCREENS[key](params);
     const scr = app.querySelector('.screen');
     if (keep) { scr.scrollTop = keep; scr.style.animation = 'none'; const r = scr.querySelector('.refs'); if (r) r.scrollLeft = refsScroll; }
@@ -744,6 +809,19 @@
     if (a === 'setcat') { state.cat = el.dataset.c; save(); }
     if (a === 'toggle') { const i = +el.dataset.i; state.toggles[i] = !state.toggles[i]; el.setAttribute('aria-checked', state.toggles[i]); save(); }
     if (a === 'filter') { state.filter = el.dataset.f; save(); render(); }
+    if (a === 'grfilter') { state.grFilter = el.dataset.f; save(); render(); }
+    if (a === 'period') { period = el.dataset.f; render(); }
+    if (a === 'trash') { e.preventDefault(); sheet = +el.dataset.i; sheetWhy = WHY[0]; render(); }
+    if (a === 'why') { sheetWhy = el.dataset.v; render(); }
+    if (a === 'closesheet') { sheet = null; render(); }
+    if (a === 'archive' && sheet !== null) {
+      const [w] = state.wardrobe.splice(sheet, 1); const [why, kind] = WHY_TAG[sheetWhy];
+      state.grenier.unshift(Object.assign({}, w, { why, kind })); sheet = null; save(); toast(`« ${w.name} » est au grenier.`); go('grenier');
+    }
+    if (a === 'restore') {
+      const [g] = state.grenier.splice(+el.dataset.i, 1); const w = Object.assign({}, g); delete w.why; delete w.kind;
+      state.wardrobe.push(w); save(); render(); toast(`« ${g.name} » est de retour dans ta garde-robe.`);
+    }
     if (a === 'like') { const k = el.dataset.k; state.likes[k] = !state.likes[k]; save(); render(); }
     if (a === 'cat') { state.cat = el.dataset.c; save(); render(); }
     if (a === 'toast') { toast(el.dataset.msg); }
@@ -782,6 +860,9 @@
     ['ad3', 'Photo à reprendre', 'ajout'],
     ['cp3', 'Photo à reprendre', 'en magasin'],
     ['cabine', 'Ma cabine', ''],
+    ['bilan', 'Mon bilan', 'données'],
+    ['grenier', 'Le grenier', 'vêtements archivés'],
+    ['garderobe', 'Mettre au grenier', 'poubelle sur une carte'],
     ['param', 'Paramètres', ''],
   ];
   const list = document.getElementById('scenarios');

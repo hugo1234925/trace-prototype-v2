@@ -47,6 +47,9 @@ comme sur ordinateur, sans installation ni dépendance (HTML, CSS et JavaScript 
 | Photo à reprendre (ajout) | `#/ad3` |
 | Photo à reprendre (magasin) | `#/cp3` |
 | Ma cabine | `#/cabine` |
+| Mon bilan (données) | `#/bilan` |
+| Le grenier | `#/grenier` |
+| Mettre au grenier (poubelle sur une carte) | `#/garderobe` |
 | Paramètres | `#/param` |
 
 Les compteurs (comparés, gardés, laissés) et « Ma cabine » se mettent à jour pendant le test et sont
