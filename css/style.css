@@ -257,7 +257,7 @@ h1, h2, h3, p { margin: 0; }
 .bubble { align-self: center; background: var(--ink); color: #fff; font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 14px; position: relative; margin-bottom: 16px; }
 .bubble::after { content: ""; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); border: 8px solid transparent; border-bottom: 0; border-top-color: var(--ink); }
 .trace-card { position: relative; height: 320px; padding: 0; }
-.trace-stage { position: absolute; left: 93px; top: 70px; width: 156px; height: 239px; }
+.trace-stage { position: absolute; left: 50%; top: 50%; width: 156px; height: 239px; transform: translate(-50%, -48%) scale(1.36); transform-origin: center; }
 .trace-stage img, .trace-stage svg { position: absolute; }
 .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; margin: 12px 0 16px; font-size: 11px; font-weight: 500; color: var(--muted); }
 .legend span { display: flex; align-items: center; gap: 8px; }

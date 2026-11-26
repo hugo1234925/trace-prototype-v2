@@ -179,6 +179,11 @@
     const f = opts.dark ? 'filter:brightness(.55) saturate(.6)' : opts.light ? 'filter:grayscale(1) brightness(1.5)' : '';
     return `<img src="${src}" alt="${opts.alt || ''}" style="${f}" loading="lazy">`;
   }
+  // Découpe la photo selon la forme du vêtement (en attendant la vraie détection)
+  function scalePath(d, sx, sy) {
+    let i = 0;
+    return d.replace(/-?\d+(\.\d+)?/g, n => (+(i++ % 2 ? n * sy : n * sx)).toFixed(2));
+  }
   function traceSvg(ref, x, y) {
     const isCard = ref.w > 0 && !ref.x;
     const left = isCard ? 77.5 - ref.w / 2 : x;
@@ -587,7 +592,7 @@
       <div class="bubble">${noMatch ? 'Aucun de tes 5 pantalons ne correspond' : 'Proche de 2 de tes 5 pantalons'}</div>
       <div class="card trace-card">
         <div class="trace-stage">
-          <img src="${SHOTS.store || IMG.piece}" alt="Pièce photographiée en magasin" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;object-fit:${SHOTS.store ? 'cover' : 'fill'};border-radius:${SHOTS.store ? '8px' : '0'}">
+          <img src="${SHOTS.store || IMG.piece}" alt="Pièce photographiée en magasin" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;object-fit:${SHOTS.store ? 'cover' : 'fill'};${SHOTS.store ? `clip-path:path('${scalePath(PATH.jean, p.w / 117.07, p.h / 208.21)}')` : ''}">
           ${traceSvg(ref, ref.x, ref.y || 15)}
         </div>
       </div>
