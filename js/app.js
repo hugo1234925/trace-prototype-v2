@@ -135,6 +135,7 @@
     search: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
     trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
     restore: '<path d="M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3"/>',
+    hanger: '<path d="M10 6a2 2 0 1 1 2 2v2.2L20.5 17a1 1 0 0 1-.6 1.8H4.1a1 1 0 0 1-.6-1.8L12 10.2"/>',
     box: '<path d="M3 7l9-4 9 4-9 4zM3 7v10l9 4 9-4V7M12 11v10"/>',
     camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
   };
@@ -386,7 +387,7 @@
     </section>
     <div class="row gap-10" style="margin-top:14px">
       <a class="card shortcut" href="#/grenier"><span class="dot">${icon('box', 20, '#2A4DA0')}</span><span><b>Le grenier</b><span>${state.grenier.length} archivé${state.grenier.length > 1 ? 's' : ''}</span></span></a>
-      <a class="card shortcut" href="#/cabine"><span class="dot"></span><span><b>Ma cabine</b><span>${state.cabine.length} pièces à essayer</span></span></a>
+      <a class="card shortcut" href="#/cabine"><span class="dot">${icon('hanger', 20, '#2A4DA0')}</span><span><b>Ma cabine</b><span>${state.cabine.length} pièces à essayer</span></span></a>
     </div>
     <div class="section-head"><h2 class="h-section">Hauts</h2><span class="small">3 traces</span><a class="chip" href="#/garderobe" data-filter="Hauts">Voir tout</a></div>
     <div class="hscroll">${[{ name: 'T-shirt blanc', img: IMG.tshirt }, { name: 'Chemise ciel', img: IMG.demizip }, { name: 'Chandail crème', img: IMG.marine }].map(itemCard).join('')}${addCard()}</div>
