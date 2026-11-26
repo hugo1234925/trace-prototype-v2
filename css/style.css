@@ -307,3 +307,86 @@ h1, h2, h3, p { margin: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .toast { position: absolute; left: 24px; right: 24px; bottom: 110px; z-index: 40; background: var(--ink); color: #fff; padding: 14px 16px; border-radius: 14px; font-size: 14px; animation: enter .2s ease-out; }
 :focus-visible { outline: 2px solid var(--trace); outline-offset: 2px; }
+
+
+/* ================================================================== */
+/* Verre liquide (liquid glass) : navigation, onglets et contrôles    */
+/* ================================================================== */
+:root {
+  --glass-bg: linear-gradient(160deg, rgba(255,255,255,.62), rgba(255,255,255,.26));
+  --glass-edge: rgba(255,255,255,.75);
+  --glass-shadow: inset 0 1px 1px rgba(255,255,255,.95), inset 0 -1px 1px rgba(255,255,255,.35),
+                  inset 0 0 14px rgba(255,255,255,.35), 0 10px 30px rgba(15,20,30,.12), 0 1px 3px rgba(15,20,30,.08);
+  --glass-blur: blur(18px) saturate(190%) brightness(1.04);
+}
+/* reflet spéculaire commun */
+.nav::before, .seg::before, .round-btn::before, .seg [aria-current="true"]::before, .nav a[aria-current="page"]::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(130% 70% at 25% -10%, rgba(255,255,255,.75), rgba(255,255,255,0) 55%),
+              radial-gradient(80% 50% at 90% 120%, rgba(255,255,255,.35), rgba(255,255,255,0) 60%);
+}
+
+/* Barre de navigation */
+.nav {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+  padding: 0 14px;
+}
+.nav a:not(.compare) { position: relative; padding: 7px 14px; border-radius: 22px; z-index: 0; }
+.nav a:not(.compare)[aria-current="page"] {
+  background: linear-gradient(160deg, rgba(255,255,255,.95), rgba(255,255,255,.55));
+  box-shadow: inset 0 1px 1px #fff, 0 4px 14px rgba(15,20,30,.12);
+}
+.nav .compare .orb { position: relative; overflow: hidden; border: 1.5px solid rgba(255,255,255,.75);
+  box-shadow: 0 12px 28px rgba(20,51,107,.38), inset 0 2px 3px rgba(255,255,255,.55), inset 0 -6px 12px rgba(10,25,60,.35), 0 0 0 4px rgba(255,255,255,.45); }
+.nav .compare .orb::before { content: ""; position: absolute; left: 12%; right: 12%; top: 6%; height: 42%; border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,.6), rgba(255,255,255,0)); pointer-events: none; }
+
+/* Onglets segmentés (Vêtement / Étiquette, filtres de la garde-robe) */
+.seg {
+  position: relative; gap: 2px;
+  background: linear-gradient(160deg, rgba(255,255,255,.55), rgba(236,238,243,.4));
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.9), inset 0 -1px 2px rgba(15,20,30,.05), 0 4px 16px rgba(15,20,30,.06);
+  backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+}
+.seg a, .seg button { position: relative; transition: background .25s, color .2s, box-shadow .25s; }
+.seg [aria-current="true"] {
+  background: linear-gradient(160deg, rgba(255,255,255,.98), rgba(255,255,255,.7));
+  box-shadow: inset 0 1px 1px #fff, inset 0 -1px 1px rgba(15,20,30,.04), 0 6px 16px rgba(15,20,30,.12), 0 1px 2px rgba(15,20,30,.08);
+}
+.seg.lg-tabs a, .seg.lg-tabs button { height: 36px; font-size: 13px; }
+
+/* Onglets posés sur la caméra */
+.cam-controls { position: absolute; left: 14px; right: 14px; bottom: 14px; z-index: 2; }
+.cam .cam-status { top: 12px; bottom: auto; }
+.seg.on-cam {
+  background: linear-gradient(160deg, rgba(255,255,255,.28), rgba(255,255,255,.08));
+  border-color: rgba(255,255,255,.45);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.6), inset 0 -1px 1px rgba(255,255,255,.15), 0 8px 24px rgba(0,0,0,.25);
+}
+.seg.on-cam a, .seg.on-cam button { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+.seg.on-cam [aria-current="true"] { color: var(--ink); text-shadow: none; }
+.cam.off .seg.on-cam a, .cam.off .seg.on-cam button { color: var(--ink); text-shadow: none; }
+.cam.off .seg.on-cam { background: linear-gradient(160deg, rgba(255,255,255,.7), rgba(255,255,255,.4)); }
+
+/* Boutons ronds (retour, fermer, menu) */
+.round-btn {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+}
+
+/* Sans flou d'arrière-plan : on garde un fond lisible */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav, .seg, .round-btn { background: rgba(255,255,255,.94); }
+  .seg.on-cam { background: rgba(20,22,30,.55); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .nav, .seg, .round-btn { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .seg.on-cam { background: rgba(20,22,30,.75); }
+}

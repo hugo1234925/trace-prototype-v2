@@ -278,8 +278,8 @@
     return screen('', `
       <header class="topbar" style="align-items:flex-start">${back('accueil')}<div><h1 class="title-xl">Ma garde-robe</h1><p class="small">6 préférés</p></div></header>
       <label class="search">${icon('search', 18, '#6B6F7A')}<input type="search" placeholder="Rechercher un vêtement" aria-label="Rechercher un vêtement"></label>
-      <div class="row gap-8" style="margin:16px 0" role="group" aria-label="Filtrer">
-        ${['Tout', 'Hauts', 'Bas', 'Vestes'].map(f => `<button class="chip ${state.filter === f ? 'dark' : ''}" aria-pressed="${state.filter === f}" data-action="filter" data-f="${f}">${f}</button>`).join('')}
+      <div class="seg lg-tabs" style="margin:16px 0" role="tablist" aria-label="Filtrer">
+        ${['Tout', 'Hauts', 'Bas', 'Vestes'].map(f => `<button role="tab" aria-selected="${state.filter === f}" aria-current="${state.filter === f}" data-action="filter" data-f="${f}">${f}</button>`).join('')}
       </div>
       <div class="grid-2">${list.map(w => {
         const inner = `<div class="ph">${photo(w.img)}</div><b>${w.name}</b><span>${w.meta}</span>`;
@@ -332,21 +332,21 @@
       <path d="${d}" fill="none" stroke="#265CF2" stroke-width="${3 * k}" stroke-dasharray="${10 * k} ${7 * k}" stroke-linejoin="round"/></svg>`;
   }
   // Viseur caméra : vidéo en direct + repère par-dessus
-  function camView(overlay, h) {
+  function camView(overlay, h, controls = '') {
     return `<div class="cam" style="height:${h}px">
       <video data-cam playsinline muted autoplay></video>
       <div class="cam-overlay">${overlay}</div>
-      <p class="cam-status" role="status">Activation de la caméra…</p></div>`;
+      <p class="cam-status" role="status">Activation de la caméra…</p>
+      ${controls ? `<div class="cam-controls">${controls}</div>` : ''}</div>`;
   }
   SCREENS.photo = () => {
     const c = CATS.find(x => x.id === state.cat) || CATS[2];
     return screen('white', `
       ${stepbar('cat', 2)}
       <h1 class="title-m">Pose ${c.noun} à plat · 0 / 6 points</h1>
-      ${camView(guideShape(c.id, 190, 200), 330)}
+      ${camView(guideShape(c.id, 190, 200), 360, '<div class="seg on-cam" role="tablist"><a role="tab" aria-current="true" href="#/photo">Vêtement</a><a role="tab" href="#/ad1">Étiquette</a></div>')}
       <div class="spacer"></div>
       <ul class="checks" style="padding:0;margin:0 0 14px"><li>○ &nbsp;Bon éclairage</li><li>○ &nbsp;Fond contrasté (plancher, drap)</li><li>○ &nbsp;Le vêtement en entier dans le cadre</li></ul>
-      <div class="seg"><a aria-current="true" href="#/photo">Vêtement</a><a href="#/ad1">Étiquette</a></div>
       <button class="shutter" aria-label="Prendre la photo" data-action="shoot" data-shot="add" data-to="verif" data-msg="Mesure en cours…"></button>`);
   };
 
@@ -373,10 +373,9 @@
   SCREENS.ad1 = () => screen('white', `
     <header class="topbar">${back('photo')}</header>
     <h1 class="title-m">Vise l’étiquette</h1>
-    ${camView('<div style="width:200px;height:200px;border-radius:28px;border:3px dashed #fff;box-shadow:0 0 0 2px rgba(38,92,242,.9), inset 0 0 0 2px rgba(38,92,242,.9)"></div>', 330)}
+    ${camView('<div style="width:200px;height:200px;border-radius:28px;border:3px dashed #fff;box-shadow:0 0 0 2px rgba(38,92,242,.9), inset 0 0 0 2px rgba(38,92,242,.9)"></div>', 420, '<div class="seg on-cam" role="tablist"><a role="tab" href="#/photo">Vêtement</a><a role="tab" aria-current="true" href="#/ad1">Étiquette</a></div>')}
     <p class="small" style="padding:0 12px">Étiquette du fabricant : composition et taille</p>
     <div class="spacer"></div>
-    <div class="seg" style="margin-top:20px"><a href="#/photo">Vêtement</a><a aria-current="true" href="#/ad1">Étiquette</a></div>
     <button class="shutter" aria-label="Lire l’étiquette" data-action="shoot" data-shot="tag" data-to="ad2" data-msg="Lecture de l’étiquette…"></button>`);
 
   SCREENS.ad2 = () => screen('', `
@@ -407,10 +406,9 @@
   /* --- Comparer en magasin --- */
   SCREENS.scan = () => screen('white', `
     <header class="topbar">${back(state.hasWardrobe ? 'accueil' : 'vide', 'close')}</header>
-    ${camView(guideShape('pantalon', 210, 220), 400)}
+    ${camView(guideShape('pantalon', 210, 220), 440, '<div class="seg on-cam" role="tablist"><a role="tab" aria-current="true" href="#/scan">Vêtement</a><button role="tab" data-action="shoot" data-to="resultat" data-msg="Recherche du produit…">Code produit</button></div>')}
     <div class="spacer"></div>
     <p style="font-size:14px;font-weight:500;line-height:1.45;margin:0 0 16px">Prends la pièce en photo, tenue devant toi, ou scanne son code produit. Trace la compare à tous tes vêtements du même type.</p>
-    <div class="seg"><a aria-current="true" href="#/scan">Vêtement</a><button data-action="shoot" data-to="resultat" data-msg="Recherche du produit…">Code produit</button></div>
     <button class="shutter" aria-label="Comparer" data-action="shoot" data-shot="store" data-to="resultat" data-msg="Comparaison avec tes pantalons…"></button>`);
 
   function result(noMatch, params) {
