@@ -35,6 +35,8 @@ comme sur ordinateur, sans installation ni dépendance (HTML, CSS et JavaScript 
 | Scénario | Lien à ajouter après l’adresse du site |
 |---|---|
 | Premier lancement | `#/o1` |
+| Connexion | `#/c1` |
+| Créer un compte (5 étapes) | `#/c4` |
 | Accueil (garde-robe remplie) | `#/accueil` |
 | Accueil vide | `#/vide` |
 | Ajouter un vêtement | `#/cat` |

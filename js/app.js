@@ -88,6 +88,8 @@
     cat: 'pantalon',
     filter: 'Tout',
     toggles: [true, false, true],
+    profile: { prenom: 'Alex', nom: 'Tremblay', user: 'alex.t', email: '', genre: 'Non binaire', coupe: 'Les deux', grandeur: '172', unit: 'cm', taille: 'M',
+      styles: ['Minimaliste', 'Vintage'], budget: '50 à 100 $', freq: 'Quelques fois par an', why: ['Arrêter les retours de colis', 'Acheter moins, mais mieux'], other: '', cgu: false },
     likes: { 'La taille': true, 'La longueur': true, 'Les hanches': true, 'Ajusté aux cuisses': false, 'Bouger à l’aise': true },
     cabine: [
       { name: 'Pantalon gris · friperie', img: IMG.chino, verdict: 'Prends-le · vs ton jean droit', when: 'Aujourd’hui' },
@@ -178,6 +180,111 @@
   /* ------------------------------------------------------------------ */
   const SCREENS = {};
 
+
+  /* --- Compte : connexion et création (ligne 5 de la maquette) --- */
+  const P = () => state.profile;
+  function fieldHTML(label, key, type = 'text', placeholder = '', opts = {}) {
+    const val = opts.value !== undefined ? opts.value : (P()[key] || '');
+    return `<label class="fld ${opts.error ? 'err' : ''}" style="${opts.w ? 'flex:1;min-width:0' : ''}"><span>${label}</span>
+      <span class="fld-box">${opts.prefix ? `<i class="pre">${opts.prefix}</i>` : ''}<input type="${type}" ${key ? `data-bind="${key}"` : `data-local="${opts.local || ''}"`} value="${esc(val)}" placeholder="${placeholder}" ${opts.auto ? `autocomplete="${opts.auto}"` : ''}>
+      ${opts.reveal ? '<button type="button" class="reveal" data-action="reveal">Afficher</button>' : ''}</span>
+      ${opts.help ? `<small>${opts.help}</small>` : ''}</label>`;
+  }
+  function chipsHTML(key, values, multi = false) {
+    const cur = P()[key];
+    return `<div class="row gap-8" style="flex-wrap:wrap" role="group">${values.map(v => {
+      const on = multi ? cur.includes(v) : cur === v;
+      return `<button class="chip ${on ? 'dark' : ''}" aria-pressed="${on}" data-action="pick" data-key="${key}" data-v="${esc(v)}" ${multi ? 'data-multi="1"' : ''}>${on ? '✓ ' : ''}${v}</button>`;
+    }).join('')}</div>`;
+  }
+  function optHTML(key, label, multi, extra = '') {
+    const on = multi ? P()[key].includes(label) : P()[key] === label;
+    return `<button class="opt ${on ? 'on' : ''}" role="${multi ? 'checkbox' : 'radio'}" aria-checked="${on}" data-action="pick" data-key="${key}" data-v="${esc(label)}" ${multi ? 'data-multi="1"' : ''}>
+      <i class="${multi ? 'box' : 'dot'}">${on && multi ? icon('check', 14, '#fff', 2.6) : ''}</i><span>${label}</span>${extra}</button>`;
+  }
+  function signupStep(n, back, title, sub, body, next = 'Continuer', skip = true) {
+    return screen('', `
+      <header class="topbar">${back ? `<a class="round-btn" href="#/${back}" aria-label="Retour">${icon('back', 20)}</a>` : ''}<span class="step-label">Étape ${n} sur 5</span></header>
+      <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="${n}"><span style="width:${n * 20}%"></span></div>
+      <h1 class="title-l">${title}</h1><p class="small" style="font-size:14px;margin:8px 0 22px">${sub}</p>
+      ${body}
+      <div class="spacer"></div>
+      <div class="actions"><button class="btn" data-action="next" data-step="${n}">${next}</button>
+        ${skip ? `<a class="link" href="#/c${n + 4}">Passer cette étape</a>` : ''}${n === 1 ? '<a class="link" href="#/c1">Déjà un compte ? Se connecter</a>' : ''}</div>`);
+  }
+  function loginScreen(params) {
+    const err = params.get('erreur') === '1';
+    return screen('', `
+      <header class="topbar">${back('o1')}</header>
+      <div class="app-mark"><img src="img/logo-trace.svg" alt="Trace" width="40" height="14"></div>
+      <h1 class="title-xl" style="margin:16px 0 6px">Bon retour</h1>
+      <p class="small" style="font-size:14px;margin-bottom:22px">Connecte-toi pour retrouver tes traces et ton bilan.</p>
+      <div class="stack gap-16">
+        ${fieldHTML('Courriel ou nom d’utilisateur', null, 'text', 'nom@exemple.com', { local: 'id', value: LOGIN.id, error: err, auto: 'username' })}
+        ${fieldHTML('Mot de passe', null, 'password', 'Ton mot de passe', { local: 'pw', value: LOGIN.pw, error: err, reveal: true, auto: 'current-password' })}
+      </div>
+      ${err ? `<div class="card err-line" role="alert"><span class="badge bad">${'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"><path d="M9 5.2v4.6"/><circle cx="9" cy="12.6" r="1" fill="#fff" stroke="none"/></svg>'}</span><span>Courriel ou mot de passe incorrect. Vérifie-les ou réinitialise ton mot de passe.</span></div>` : ''}
+      <a href="#/c3" class="small" style="align-self:flex-end;font-weight:600;color:#2a4da0;margin:12px 0 18px">Mot de passe oublié ?</a>
+      <button class="btn" data-action="login">Se connecter</button>
+      <div class="or"><span>ou</span></div>
+      <div class="stack gap-12"><button class="btn ghost" data-action="sso">Continuer avec Apple</button><button class="btn ghost" data-action="sso">Continuer avec Google</button></div>
+      <div class="spacer"></div>
+      <a class="link" href="#/c4" style="padding-top:24px">Pas encore de compte ? Créer un compte</a>`);
+  }
+  const LOGIN = { id: '', pw: '' };
+  SCREENS.c1 = loginScreen;
+  SCREENS.c2 = () => { LOGIN.id = LOGIN.id || 'alex@exemple.com'; LOGIN.pw = LOGIN.pw || 'motdepasse'; return loginScreen(new URLSearchParams('erreur=1')); };
+  SCREENS.c3 = () => screen('', `
+    <header class="topbar">${back('c1')}</header>
+    <h1 class="title-xl" style="margin:16px 0 8px">Mot de passe oublié</h1>
+    <p class="small" style="font-size:14px;margin-bottom:24px">Entre ton courriel : on t’envoie un lien pour choisir un nouveau mot de passe.</p>
+    ${fieldHTML('Courriel', null, 'email', 'nom@exemple.com', { local: 'reset', value: '', auto: 'email' })}
+    <button class="btn" style="margin-top:24px" data-action="reset">Envoyer le lien</button>
+    <div class="spacer"></div>
+    <a class="link" href="#/c1">Retour à la connexion</a>`);
+  SCREENS.c4 = () => signupStep(1, 'o4', 'Crée ton compte', 'Tes traces sont gardées dans ton compte, sur tous tes appareils.', `
+    <div class="stack gap-16">
+      <div class="row gap-10" style="align-items:flex-start">${fieldHTML('Prénom', 'prenom', 'text', 'Alex', { w: 1, auto: 'given-name' })}${fieldHTML('Nom', 'nom', 'text', 'Tremblay', { w: 1, auto: 'family-name' })}</div>
+      ${fieldHTML('Nom d’utilisateur', 'user', 'text', 'alex.t', { prefix: '@', help: 'Visible seulement dans ton profil.', auto: 'username' })}
+      ${fieldHTML('Courriel', 'email', 'email', 'nom@exemple.com', { auto: 'email' })}
+      ${fieldHTML('Mot de passe', null, 'password', '8 caractères minimum', { local: 'newpw', value: '', reveal: true, auto: 'new-password' })}
+      <button class="cgu" role="checkbox" aria-checked="${P().cgu}" data-action="cgu"><i class="box">${P().cgu ? icon('check', 14, '#fff', 2.6) : ''}</i><span>J’accepte les conditions d’utilisation et la politique de confidentialité.</span></button>
+    </div>`, 'Continuer', false);
+  SCREENS.c5 = () => signupStep(2, 'c4', 'Parle-nous de toi', 'Pour te proposer les bonnes coupes. Tout est facultatif.', `
+    <p class="lbl">Genre</p>${chipsHTML('genre', ['Femme', 'Homme', 'Non binaire', 'Préfère ne pas dire'])}
+    <p class="lbl">Coupes que tu portes</p>
+    <div class="seg" role="tablist">${['Femme', 'Homme', 'Les deux'].map(v => `<button role="tab" aria-current="${P().coupe === v}" data-action="pick" data-key="coupe" data-v="${v}">${v}</button>`).join('')}</div>
+    <p class="lbl">Ta grandeur</p>
+    <div class="row gap-10">${fieldHTML('', 'grandeur', 'text', P().unit === 'cm' ? '172' : '5 pi 8 po', { w: 1 })}
+      <div class="seg" style="width:130px">${['cm', 'pi/po'].map(v => `<button aria-current="${P().unit === v}" data-action="pick" data-key="unit" data-v="${v}">${v}</button>`).join('')}</div></div>
+    <p class="lbl">Taille habituelle en haut</p>${chipsHTML('taille', ['XS', 'S', 'M', 'L', 'XL', 'Je ne sais pas'])}`);
+  const STYLES = [['Minimaliste', 'tshirt'], ['Classique', 'veste'], ['Streetwear', 'chandail'], ['Sportif', 'short'], ['Vintage', 'pantalon'], ['Chic', 'veste'], ['Décontracté', 'tshirt'], ['Bohème', 'jupe']];
+  SCREENS.c6 = () => signupStep(3, 'c5', 'C’est quoi ton style ?', 'Choisis jusqu’à 3 styles. Trace s’en sert pour ses conseils, jamais pour te juger.', `
+    <div class="grid-2" role="group" aria-label="Styles">${STYLES.map(([s, k]) => {
+      const on = P().styles.includes(s);
+      return `<button class="style-card ${on ? 'on' : ''}" aria-pressed="${on}" data-action="pick" data-key="styles" data-v="${s}" data-multi="1" data-max="3">
+        <span class="vis">${shape(k, 36, on ? '#fff' : '#2A4DA0')}</span><b>${s}</b>${on ? `<span class="tick">${icon('check', 14, '#0b0b0d', 2.6)}</span>` : ''}</button>`;
+    }).join('')}</div>
+    <p class="small" style="margin-top:12px">${P().styles.length} / 3 choisis</p>`);
+  SCREENS.c7 = () => signupStep(4, 'c6', 'Ton budget', 'Combien veux-tu mettre par pièce, en général ? Trace te prévient quand une pièce dépasse.', `
+    <div class="stack gap-8" role="radiogroup">${['Moins de 50 $', '50 à 100 $', '100 à 200 $', 'Plus de 200 $', 'Ça dépend de la pièce'].map(v => optHTML('budget', v, false, v.includes('$') ? '<em>par pièce</em>' : '')).join('')}</div>
+    <p class="lbl">Tu achètes des vêtements…</p>${chipsHTML('freq', ['Chaque semaine', 'Chaque mois', 'Quelques fois par an', 'Rarement'])}`);
+  SCREENS.c8 = () => signupStep(5, 'c7', 'Pourquoi Trace ?', 'Qu’est-ce qui t’a donné envie de télécharger l’app ? Plusieurs choix possibles.', `
+    <div class="stack gap-8">${['Arrêter les retours de colis', 'Trouver ma taille du premier coup', 'Acheter moins, mais mieux', 'Réduire mon impact sur la planète', 'Gagner du temps en magasin', 'Autre raison'].map(v => optHTML('why', v, true)).join('')}
+    ${P().why.includes('Autre raison') ? fieldHTML('', 'other', 'text', 'Précise ta raison (facultatif)') : ''}</div>`, 'Créer mon compte', false);
+  SCREENS.c9 = () => {
+    const p = P(), list = a => a.length ? a.map(x => x.toLowerCase()).join(', ') : 'non précisé';
+    return screen('', `
+      <div class="big-icon dark" style="margin-top:50px">${icon('check', 44, '#fff', 2.4)}</div>
+      <h1 class="title-xl center">Bienvenue, ${esc(p.prenom || 'toi')} !</h1>
+      <p class="body center" style="margin-top:10px">Ton compte est prêt. Ajoute maintenant ton vêtement préféré : il deviendra ton guide de tailles.</p>
+      <section class="recap"><b>Ton profil</b>
+        <dl><dt>Style</dt><dd>${list(p.styles)}</dd><dt>Budget</dt><dd>${p.budget ? esc(p.budget) + (p.budget.includes('$') ? ' par pièce' : '') : 'non précisé'}</dd><dt>Objectif</dt><dd>${esc(list(p.why.filter(w => w !== 'Autre raison').concat(p.other ? [p.other] : [])))}</dd></dl></section>
+      <p class="tiny" style="margin-top:12px">Tu peux tout modifier dans Paramètres.</p>
+      <div class="spacer"></div>
+      <div class="actions"><a class="btn" href="#/cat">Ajouter mon premier préféré</a><a class="link" href="#/vide">Plus tard</a></div>`);
+  };
+
   /* --- Premier lancement --- */
   SCREENS.o1 = () => screen('', `
     <div class="spacer"></div>
@@ -190,7 +297,7 @@
     <div class="spacer"></div>
     <div class="actions">
       <a class="btn" href="#/o2">Commencer</a>
-      <a class="link" href="#/accueil" data-action="already">J’ai déjà mes traces</a>
+      <a class="link" href="#/c1">J’ai déjà mes traces</a>
     </div>`);
 
   SCREENS.o2 = () => screen('', `
@@ -228,7 +335,7 @@
     </div>
     <p class="small" style="margin-top:20px">Tu peux changer ces réglages à tout moment dans Paramètres › Confidentialité.</p>
     <div class="spacer"></div>
-    <div class="actions"><a class="btn" href="#/vide" data-action="onboarded">J’accepte et je continue</a>
+    <div class="actions"><a class="btn" href="#/c4">J’accepte et je continue</a>
       <button class="link" data-action="toast" data-msg="Politique de confidentialité : texte juridique à rédiger et valider.">Lire la politique de confidentialité</button></div>`);
 
   /* --- Accueil --- */
@@ -249,8 +356,8 @@
   function addCard() { return `<a class="card item add" href="#/cat">${icon('plain_plus', 28)}Ajouter</a>`; }
   SCREENS.accueil = () => screen('', `
     <header class="row gap-12" style="margin:12px 0 18px">
-      <span class="avatar" aria-hidden="true">A</span>
-      <div style="flex:1"><h1 style="font-size:22px">Salut Alex,</h1><p class="small">Ravi de te revoir dans ta garde-robe.</p></div>
+      <span class="avatar" aria-hidden="true">${esc((state.profile.prenom || '?')[0].toUpperCase())}</span>
+      <div style="flex:1"><h1 style="font-size:22px">Salut ${esc(state.profile.prenom || 'toi')},</h1><p class="small">Ravi de te revoir dans ta garde-robe.</p></div>
       <a class="round-btn" href="#/param" aria-label="Paramètres">${icon('menu', 20)}</a>
     </header>
     <section class="bilan" aria-label="Mon bilan">
@@ -505,7 +612,7 @@
 
   SCREENS.param = () => screen('', `
     ${topbar('accueil', 'Paramètres')}
-    <div class="card row gap-16" style="padding:18px 16px;margin-bottom:20px"><span class="avatar" style="width:56px;height:56px" aria-hidden="true">A</span><span class="stack gap-4"><b style="font-size:16px">Alex</b><span class="small" style="font-size:12px">${state.traces} traces enregistrées</span></span></div>
+    <div class="card row gap-16" style="padding:18px 16px;margin-bottom:20px"><span class="avatar" style="width:56px;height:56px" aria-hidden="true">${esc((state.profile.prenom || '?')[0].toUpperCase())}</span><span class="stack gap-4"><b style="font-size:16px">${esc(state.profile.prenom + ' ' + state.profile.nom)}</b><span class="small" style="font-size:12px">@${esc(state.profile.user)}</span><span class="small" style="font-size:12px">${state.traces} traces enregistrées</span></span></div>
     <div class="stack gap-10">
       ${[['Langue · Français'], ['Accessibilité'], ['Confidentialité et données', 'o4'], ['Notifications'], ['Aide et nous joindre'], ['À propos de Trace']].map(([t, to]) => to
         ? `<a class="list-row" href="#/${to}">${t}${icon('chev', 20)}</a>`
@@ -585,6 +692,12 @@
     app.appendChild(o); setTimeout(() => go(to), 900);
   }
 
+  app.addEventListener('input', e => {
+    const t = e.target;
+    if (t.dataset.bind) { P()[t.dataset.bind] = t.value; save(); }
+    if (t.dataset.local === 'id') LOGIN.id = t.value;
+    if (t.dataset.local === 'pw') LOGIN.pw = t.value;
+  });
   app.addEventListener('click', e => {
     const el = e.target.closest('[data-action]');
     if (!el) {
@@ -594,6 +707,33 @@
     }
     const a = el.dataset.action;
     if (a === 'already') { state.hasWardrobe = true; save(); }
+    if (a === 'reveal') { const i = el.parentElement.querySelector('input'); const show = i.type === 'password'; i.type = show ? 'text' : 'password'; el.textContent = show ? 'Masquer' : 'Afficher'; }
+    if (a === 'login') {
+      if (!LOGIN.id.trim() || !LOGIN.pw.trim()) { go('c1?erreur=1'); return; }
+      state.hasWardrobe = true; save(); go('accueil');
+    }
+    if (a === 'sso') { state.hasWardrobe = true; save(); toast('Connexion simulée.'); setTimeout(() => go('accueil'), 700); }
+    if (a === 'reset') { const v = (app.querySelector('[data-local="reset"]') || {}).value || 'ton courriel'; toast(`Lien envoyé à ${v}. Vérifie aussi tes courriels indésirables.`); setTimeout(() => go('c1'), 1800); }
+    if (a === 'cgu') { P().cgu = !P().cgu; save(); render(); }
+    if (a === 'pick') {
+      const k = el.dataset.key, v = el.dataset.v, p = P();
+      if (el.dataset.multi) {
+        const i = p[k].indexOf(v);
+        if (i >= 0) p[k].splice(i, 1);
+        else if (el.dataset.max && p[k].length >= +el.dataset.max) { toast(`Maximum ${el.dataset.max} choix.`); return; }
+        else p[k].push(v);
+      } else p[k] = p[k] === v && k !== 'coupe' && k !== 'unit' ? '' : v;
+      save(); render();
+    }
+    if (a === 'next') {
+      const n = +el.dataset.step;
+      if (n === 1) {
+        if (!P().prenom.trim()) { toast('Entre ton prénom pour continuer.'); return; }
+        if (!P().cgu) { toast('Accepte les conditions pour continuer.'); return; }
+      }
+      if (n === 5) { state.hasWardrobe = false; save(); go('c9'); return; }
+      go('c' + (n + 4));
+    }
     if (a === 'onboarded') { state.hasWardrobe = false; save(); }
     if (a === 'added') { state.hasWardrobe = true; state.traces += 1; save(); }
     if (a === 'setcat') { state.cat = el.dataset.c; save(); }
@@ -625,6 +765,8 @@
   /* Panneau de scénarios (bureau) */
   const SCENARIOS = [
     ['o1', 'Premier lancement', 'Bienvenue → données'],
+    ['c1', 'Connexion', 'J’ai déjà mes traces'],
+    ['c4', 'Créer un compte', '5 étapes'],
     ['accueil', 'Accueil', 'garde-robe remplie'],
     ['vide', 'Accueil vide', 'après l’onboarding'],
     ['cat', 'Ajouter un vêtement', '3 étapes'],
