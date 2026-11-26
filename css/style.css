@@ -428,3 +428,8 @@ h1, h2, h3, p { margin: 0; }
 .recap b { font-size: 15px; }
 .recap dl { display: grid; grid-template-columns: 76px 1fr; row-gap: 8px; margin: 12px 0 0; font-size: 13px; }
 .recap dt { color: #dbe4f5; } .recap dd { margin: 0; font-weight: 600; }
+
+/* Bouton Comparer : plus petit, légèrement surélevé, libellé entièrement dans la barre */
+.nav .compare { top: -24px; gap: 5px; line-height: 1; }
+.nav .compare .orb { width: 56px; height: 56px; border-width: 3px; }
+.nav .compare > span:last-child { white-space: nowrap; font-size: 11px; }

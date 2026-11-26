@@ -154,7 +154,7 @@
     return `<nav class="nav" aria-label="Navigation principale">
       <a href="#/${home}" ${active === 'home' ? 'aria-current="page"' : ''}>${icon('home', 22)}<span>Accueil</span></a>
       <a href="#/scan" class="compare ${state.hasWardrobe ? '' : 'disabled'}" ${active === 'compare' ? 'aria-current="page"' : ''} aria-label="Comparer">
-        <span class="orb">${icon('scan', 30, '#fff', 2)}</span><span>Comparer</span></a>
+        <span class="orb">${icon('scan', 24, '#fff', 2)}</span><span>Comparer</span></a>
       <a href="#/cat" ${active === 'add' ? 'aria-current="page"' : ''}>${icon('plus', 22)}<span>Ajouter</span></a>
     </nav>`;
   }
