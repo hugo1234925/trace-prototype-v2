@@ -499,15 +499,24 @@
       <p class="cam-status" role="status">Activation de la caméra…</p>
       ${controls ? `<div class="cam-controls">${controls}</div>` : ''}</div>`;
   }
-  SCREENS.photo = () => {
+  SCREENS.photo = params => {
     const c = CATS.find(x => x.id === state.cat) || CATS[2];
+    const tag = params && params.get('mode') === 'tag';
+    const T = tag
+      ? { title: 'Vise son étiquette', sub: 'Composition et taille du fabricant', overlay: '<div class="tag-frame"></div>',
+          checks: ['Bon éclairage', 'Texte net et lisible', 'L’étiquette en entier dans le cadre'],
+          shot: 'tag', to: 'ad2', msg: 'Lecture de l’étiquette…', label: 'Lire l’étiquette' }
+      : { title: `Pose ${c.noun} à plat`, sub: '0 / 6 points détectés', overlay: guideShape(c.id, 190, 200),
+          checks: ['Bon éclairage', 'Fond contrasté (plancher, drap)', 'Le vêtement en entier dans le cadre'],
+          shot: 'add', to: 'verif', msg: 'Mesure en cours…', label: 'Prendre la photo' };
     return screen('white', `
       ${stepbar('cat', 2)}
-      <h1 class="title-m">Pose ${c.noun} à plat · 0 / 6 points</h1>
-      ${camView(guideShape(c.id, 190, 200), 360, '<div class="seg on-cam" role="tablist"><a role="tab" aria-current="true" href="#/photo">Vêtement</a><a role="tab" href="#/ad1">Étiquette</a></div>')}
+      <h1 class="title-m" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${T.title}</h1>
+      <p class="small" style="margin:4px 0 14px">${T.sub}</p>
+      ${camView(T.overlay, 360, `<div class="seg on-cam" role="tablist"><a role="tab" ${tag ? '' : 'aria-current="true"'} href="#/photo">Vêtement</a><a role="tab" ${tag ? 'aria-current="true"' : ''} href="#/photo?mode=tag">Étiquette</a></div>`)}
       <div class="spacer"></div>
-      <ul class="checks" style="padding:0;margin:0 0 14px"><li>○ &nbsp;Bon éclairage</li><li>○ &nbsp;Fond contrasté (plancher, drap)</li><li>○ &nbsp;Le vêtement en entier dans le cadre</li></ul>
-      <button class="shutter" aria-label="Prendre la photo" data-action="shoot" data-shot="add" data-to="verif" data-msg="Mesure en cours…"></button>`);
+      <ul class="checks" style="padding:0;margin:0 0 14px">${T.checks.map(x => `<li>○ &nbsp;${x}</li>`).join('')}</ul>
+      <button class="shutter" aria-label="${T.label}" data-action="shoot" data-shot="${T.shot}" data-to="${T.to}" data-msg="${T.msg}"></button>`);
   };
 
   SCREENS.verif = () => screen('', `
@@ -530,16 +539,10 @@
     <div class="spacer"></div>
     <div class="actions"><a class="btn" href="#/ad4" data-action="added">Ajouter à ma garde-robe</a></div>`);
 
-  SCREENS.ad1 = () => screen('white', `
-    <header class="topbar">${back('photo')}</header>
-    <h1 class="title-m">Vise l’étiquette</h1>
-    ${camView('<div style="width:200px;height:200px;border-radius:28px;border:3px dashed #fff;box-shadow:0 0 0 2px rgba(38,92,242,.9), inset 0 0 0 2px rgba(38,92,242,.9)"></div>', 420, '<div class="seg on-cam" role="tablist"><a role="tab" href="#/photo">Vêtement</a><a role="tab" aria-current="true" href="#/ad1">Étiquette</a></div>')}
-    <p class="small" style="padding:0 12px">Étiquette du fabricant : composition et taille</p>
-    <div class="spacer"></div>
-    <button class="shutter" aria-label="Lire l’étiquette" data-action="shoot" data-shot="tag" data-to="ad2" data-msg="Lecture de l’étiquette…"></button>`);
+  SCREENS.ad1 = () => SCREENS.photo(new URLSearchParams('mode=tag'));
 
   SCREENS.ad2 = () => screen('', `
-    ${topbar('ad1', 'Étiquette lue')}
+    ${topbar('photo?mode=tag', 'Étiquette lue')}
     <div class="card row gap-16" style="padding:16px">
       ${SHOTS.tag ? `<img src="${SHOTS.tag}" alt="Étiquette photographiée" style="width:96px;height:96px;object-fit:cover;border-radius:14px;flex-shrink:0">` : '<span class="tint" style="width:96px;height:96px;flex-shrink:0"></span>'}
       <div class="stack gap-4"><b style="font-size:15px">Pantalon · Taille 32/32</b><span class="small">Coton 98 %, élasthanne 2 %</span><span class="small">Lavage 30 °C</span></div>
@@ -868,7 +871,7 @@
     ['accueil', 'Accueil', 'garde-robe remplie'],
     ['vide', 'Accueil vide', 'après l’onboarding'],
     ['cat', 'Ajouter un vêtement', '3 étapes'],
-    ['ad1', 'Ajouter par l’étiquette', ''],
+    ['photo?mode=tag', 'Ajouter par l’étiquette', ''],
     ['scan', 'Comparer en magasin', 'résultat jean droit'],
     ['aucun', 'Aucune correspondance', 'verdict Passe'],
     ['cp2', 'Aucun vêtement de ce type', ''],
