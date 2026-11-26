@@ -552,20 +552,26 @@
     <div class="spacer"></div>
     <div class="actions"><a class="btn ghost" href="#/photo">Reprendre la photo</a></div>`);
 
-  SCREENS.ad4 = () => screen('', `
+  SCREENS.ad4 = params => screen('', `
     <div class="big-icon dark">${icon('check', 44, '#fff', 2.4)}</div>
-    <h1 class="title-xl center">${curCat().item} ajouté${curCat().fem ? 'e' : ''}</h1>
+    <h1 class="title-xl center">${params && params.get('scanned') ? 'Pantalon kaki à pinces ajouté' : curCat().item + ' ajouté' + (curCat().fem ? 'e' : '')}</h1>
     <p class="body center" style="margin-top:12px">${curCat().fem ? 'Elle' : 'Il'} sert maintenant de repère pour comparer ${curCat().plural.replace('les ', 'tous les ').replace('tous les vestes', 'toutes les vestes').replace('tous les jupes', 'toutes les jupes')}.</p>
     <div class="spacer"></div>
     <div class="actions"><a class="btn" href="#/garderobe">Voir ma garde-robe</a><a class="btn ghost" href="#/cat">Ajouter un autre vêtement</a></div>`);
 
   /* --- Comparer en magasin --- */
-  SCREENS.scan = () => screen('white', `
+  SCREENS.scan = params => {
+    const code = params && params.get('mode') === 'code';
+    const T = code
+      ? { intro: 'Vise le code produit sur l’étiquette ou la boîte. Trace retrouve la pièce et la compare à tous tes vêtements du même type.', label: 'Scanner le code produit', msg: 'Recherche du produit…' }
+      : { intro: 'Prends la pièce en photo, tenue devant toi. Trace la compare à tous tes vêtements du même type.', label: 'Comparer', msg: 'Comparaison avec tes pantalons…' };
+    return screen('white', `
     <header class="topbar">${back(state.hasWardrobe ? 'accueil' : 'vide', 'close')}</header>
-    ${camView(guideShape('pantalon', 210, 220), 440, '<div class="seg on-cam" role="tablist"><a role="tab" aria-current="true" href="#/scan">Vêtement</a><button role="tab" data-action="shoot" data-to="resultat" data-msg="Recherche du produit…">Code produit</button></div>')}
+    ${camView(guideShape('pantalon', 210, 220), 440, `<div class="seg on-cam" role="tablist"><a role="tab" ${code ? '' : 'aria-current="true"'} href="#/scan">Vêtement</a><a role="tab" ${code ? 'aria-current="true"' : ''} href="#/scan?mode=code">Code produit</a></div>`)}
     <div class="spacer"></div>
-    <p style="font-size:14px;font-weight:500;line-height:1.45;margin:0 0 16px">Prends la pièce en photo, tenue devant toi, ou scanne son code produit. Trace la compare à tous tes vêtements du même type.</p>
-    <button class="shutter" aria-label="Comparer" data-action="shoot" data-shot="store" data-to="resultat" data-msg="Comparaison avec tes pantalons…"></button>`);
+    <p style="font-size:14px;font-weight:500;line-height:1.45;margin:0 0 16px">${T.intro}</p>
+    <button class="shutter" aria-label="${T.label}" data-action="shoot" data-shot="store" data-to="resultat" data-msg="${T.msg}"></button>`);
+  };
 
   function result(noMatch, params) {
     const i = Math.max(0, REFS.findIndex(r => r.id === params.get('ref')));
@@ -620,10 +626,10 @@
   SCREENS.cp4 = () => screen('', `
     <div class="big-icon dark">${icon('check', 44, '#fff', 2.4)}</div>
     <h1 class="title-xl center">Bon choix</h1>
-    <p class="body center" style="margin-top:12px">Une fois acheté, ajoute-le à ta garde-robe : il deviendra un nouveau repère.</p>
+    <p class="body center" style="margin-top:12px">Tu l’as déjà scanné : ajoute-le à ta garde-robe en un geste, il deviendra un nouveau repère.</p>
     <div class="card" style="padding:16px;margin-top:28px"><b style="font-size:14px">Conseil d’entretien</b><p class="small" style="margin-top:6px">Coton rigide : lave-le à l’envers, à froid, pour garder la coupe.</p></div>
     <div class="spacer"></div>
-    <div class="actions"><a class="btn" href="#/cat" data-action="setcat" data-c="pantalon">L’ajouter à ma garde-robe</a><a class="btn soft" href="#/accueil">Plus tard</a></div>`);
+    <div class="actions"><button class="btn" data-action="addscanned">L’ajouter à ma garde-robe</button><a class="btn soft" href="#/accueil">Plus tard</a></div>`);
 
   SCREENS.cp5 = () => screen('', `
     <div class="big-icon light">+1</div>
@@ -810,6 +816,10 @@
     if (a === 'setcat') { state.cat = el.dataset.c; save(); }
     if (a === 'toggle') { const i = +el.dataset.i; state.toggles[i] = !state.toggles[i]; el.setAttribute('aria-checked', state.toggles[i]); save(); }
     if (a === 'filter') { state.filter = el.dataset.f; save(); render(); }
+    if (a === 'addscanned') {
+      state.wardrobe.push({ name: 'Pantalon kaki à pinces', meta: 'Bas · scanné en magasin', img: SHOTS.store || IMG.piece, cat: 'Bas' });
+      state.traces += 1; state.cat = 'pantalon'; save(); go('ad4?scanned=1');
+    }
     if (a === 'grfilter') { state.grFilter = el.dataset.f; save(); render(); }
     if (a === 'period') { period = el.dataset.f; render(); }
     if (a === 'trash') { e.preventDefault(); sheet = +el.dataset.i; sheetWhy = WHY[0]; render(); }
