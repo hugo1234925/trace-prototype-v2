@@ -472,7 +472,7 @@
     <p class="small" style="font-size:14px;margin:8px 0 24px">Choisis un vêtement qui te va parfaitement. Les repères de mesure changent selon le type.</p>
     <div class="grid-2" role="group" aria-label="Type de vêtement">
       ${CATS.map(c => `<button class="cat-tile" aria-pressed="${state.cat === c.id}" data-action="cat" data-c="${c.id}">
-        <span class="ic">${shape(c.id, 36, state.cat === c.id ? '#fff' : '#2A4DA0')}</span>${c.label}</button>`).join('')}
+        <span class="ic">${shape(c.id, 46, state.cat === c.id ? '#fff' : '#2A4DA0')}</span>${c.label}</button>`).join('')}
     </div>
     <div class="spacer"></div>
     <div class="actions"><a class="btn" href="#/photo">Continuer</a></div>`);
